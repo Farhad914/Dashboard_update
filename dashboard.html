@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f2ead8;
+      color: #2a1f0e;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    .floral-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+      color: #2a1f0e;
+    }
+
+    .metric-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 1.5rem;
+    }
+
+    .metric {
+      background: rgba(255,248,230,0.85);
+      border: 0.5px solid rgba(160,120,60,0.2);
+      border-radius: 8px;
+      padding: 1rem;
+      backdrop-filter: blur(4px);
+    }
+
+    .metric-label {
+      font-size: 14px;
+      color: #7a6040;
+      margin-bottom: 4px;
+    }
+
+    .metric-val {
+      font-size: 28px;
+      font-weight: 500;
+      color: #2a1f0e;
+    }
+
+    .metric-val.green { color: #2d7a4f; }
+
+    .card {
+      background: rgba(255,252,242,0.9);
+      border: 0.5px solid rgba(160,120,60,0.2);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      backdrop-filter: blur(4px);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #2a1f0e;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1.25rem;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      height: 42px;
+      padding: 0 14px;
+      border: 0.5px solid rgba(160,120,60,0.35);
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: inherit;
+      background: #fffdf4;
+      color: #2a1f0e;
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: rgba(160,120,60,0.6);
+      box-shadow: 0 0 0 3px rgba(160,120,60,0.1);
+    }
+
+    input[type="text"]::placeholder { color: #b09870; }
+
+    button {
+      height: 42px;
+      padding: 0 18px;
+      border: 0.5px solid rgba(160,120,60,0.35);
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: inherit;
+      background: transparent;
+      color: #2a1f0e;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button:hover { background: rgba(160,120,60,0.1); }
+    button:active { transform: scale(0.98); }
+
+    .filter-row { display: flex; gap: 6px; }
+
+    .filter-btn {
+      font-size: 13px;
+      height: 34px;
+      padding: 0 14px;
+      border-radius: 99px;
+    }
+
+    .filter-btn.active {
+      background: rgba(160,120,60,0.15);
+      border-color: rgba(160,120,60,0.4);
+      font-weight: 500;
+    }
+
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border: 0.5px solid rgba(160,120,60,0.15);
+      border-radius: 8px;
+      background: rgba(255,252,242,0.6);
+      transition: opacity 0.2s;
+    }
+
+    .task-item.done { opacity: 0.45; }
+    .task-item.done .task-text { text-decoration: line-through; }
+
+    .task-check {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(160,120,60,0.4);
+      background: transparent;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .task-check.checked {
+      background: #2d7a4f;
+      border-color: #2d7a4f;
+    }
+
+    .task-check i { font-size: 12px; color: #fff; }
+
+    .task-text {
+      flex: 1;
+      font-size: 15px;
+      color: #2a1f0e;
+    }
+
+    .task-del {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #c0a070;
+      font-size: 17px;
+      padding: 2px;
+      height: auto;
+    }
+
+    .task-del:hover { color: #c0392b; background: none; }
+
+    .progress-bar-wrap {
+      height: 6px;
+      background: rgba(160,120,60,0.15);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-top: 1.25rem;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: #2d7a4f;
+      border-radius: 99px;
+      transition: width 0.3s;
+    }
+
+    .empty {
+      text-align: center;
+      font-size: 14px;
+      color: #b09870;
+      padding: 1.5rem 0;
+    }
+  </style>
+</head>
+<body>
+
+  <svg class="floral-canvas" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <style>
+        .stem { fill: none; stroke: #7a9c5a; stroke-linecap: round; }
+        .leaf { fill: #8db866; opacity: 0.7; }
+        .petal { opacity: 0.75; }
+      </style>
+    </defs>
+
+    <!-- LEFT SIDE FLORAL -->
+    <!-- Main thick stem bottom left -->
+    <path class="stem" stroke-width="7" d="M 30 900 C 40 820, 20 750, 50 680 C 80 610, 30 540, 60 460 C 90 380, 40 300, 70 210 C 90 150, 60 80, 80 20"/>
+    <!-- Branch stems left -->
+    <path class="stem" stroke-width="4" d="M 45 780 C 80 760, 120 740, 155 720"/>
+    <path class="stem" stroke-width="4" d="M 38 650 C 90 630, 130 600, 170 580"/>
+    <path class="stem" stroke-width="3" d="M 52 510 C 100 495, 140 470, 175 450"/>
+    <path class="stem" stroke-width="3" d="M 48 370 C 90 355, 125 330, 155 310"/>
+    <path class="stem" stroke-width="2" d="M 60 240 C 95 228, 125 210, 148 195"/>
+    <path class="stem" stroke-width="2" d="M 65 130 C 90 118, 112 105, 130 92"/>
+    <path class="stem" stroke-width="1.5" d="M 70 55 C 88 46, 105 38, 118 30"/>
+
+    <!-- Leaves left -->
+    <ellipse class="leaf" cx="100" cy="760" rx="28" ry="10" transform="rotate(-20 100 760)"/>
+    <ellipse class="leaf" cx="130" cy="618" rx="26" ry="9" transform="rotate(-15 130 618)"/>
+    <ellipse class="leaf" cx="118" cy="482" rx="22" ry="8" transform="rotate(-18 118 482)"/>
+    <ellipse class="leaf" cx="105" cy="345" rx="19" ry="7" transform="rotate(-20 105 345)"/>
+    <ellipse class="leaf" cx="108" cy="220" rx="15" ry="6" transform="rotate(-15 108 220)"/>
+    <ellipse class="leaf" cx="98" cy="112" rx="11" ry="5" transform="rotate(-12 98 112)"/>
+
+    <!-- Flowers left - big at bottom, smaller going up -->
+    <!-- Flower 1 at branch end ~(155,720) big -->
+    <g transform="translate(165,712)">
+      <circle class="petal" fill="#e8a0b0" cx="0" cy="-14" r="10"/>
+      <circle class="petal" fill="#e8a0b0" cx="13" cy="-4" r="10"/>
+      <circle class="petal" fill="#e8a0b0" cx="8" cy="10" r="10"/>
+      <circle class="petal" fill="#e8a0b0" cx="-8" cy="10" r="10"/>
+      <circle class="petal" fill="#e8a0b0" cx="-13" cy="-4" r="10"/>
+      <circle fill="#f5d76e" cx="0" cy="0" r="8"/>
+    </g>
+    <!-- Flower 2 ~(175,575) -->
+    <g transform="translate(185,570)">
+      <circle class="petal" fill="#d4a0d8" cx="0" cy="-12" r="8.5"/>
+      <circle class="petal" fill="#d4a0d8" cx="11" cy="-4" r="8.5"/>
+      <circle class="petal" fill="#d4a0d8" cx="7" cy="9" r="8.5"/>
+      <circle class="petal" fill="#d4a0d8" cx="-7" cy="9" r="8.5"/>
+      <circle class="petal" fill="#d4a0d8" cx="-11" cy="-4" r="8.5"/>
+      <circle fill="#f5d76e" cx="0" cy="0" r="6.5"/>
+    </g>
+    <!-- Flower 3 ~(178,448) -->
+    <g transform="translate(186,442)">
+      <circle class="petal" fill="#f0b090" cx="0" cy="-11" r="7.5"/>
+      <circle class="petal" fill="#f0b090" cx="10" cy="-3" r="7.5"/>
+      <circle class="petal" fill="#f0b090" cx="6" cy="8" r="7.5"/>
+      <circle class="petal" fill="#f0b090" cx="-6" cy="8" r="7.5"/>
+      <circle class="petal" fill="#f0b090" cx="-10" cy="-3" r="7.5"/>
+      <circle fill="#f5d76e" cx="0" cy="0" r="6"/>
+    </g>
+    <!-- Flower 4 ~(158,308) -->
+    <g transform="translate(164,303)">
+      <circle class="petal" fill="#a8c8e8" cx="0" cy="-9" r="6.5"/>
+      <circle class="petal" fill="#a8c8e8" cx="8" cy="-3" r="6.5"/>
+      <circle class="petal" fill="#a8c8e8" cx="5" cy="7" r="6.5"/>
+      <circle class="petal" fill="#a8c8e8" cx="-5" cy="7" r="6.5"/>
+      <circle class="petal" fill="#a8c8e8" cx="-8" cy="-3" r="6.5"/>
+      <circle fill="#f5d76e" cx="0" cy="0" r="5"/>
+    </g>
+    <!-- Flower 5 ~(150,192) -->
+    <g transform="translate(155,188)">
+      <circle class="petal" fill="#e8a0b0" cx="0" cy="-8" r="5.5"/>
+      <circle class="petal" fill="#e8a0b0" cx="7" cy="-2" r="5.5"/>
+      <circle class="petal" fill="#e8a0b0" cx="4" cy="6" r="5.5"/>
+      <circle class="petal" fill="#e8a0b0" cx="-4" cy="6" r="5.5"/>
+      <circle class="petal" fill="#e8a0b0" cx="-7" cy="-2" r="5.5"/>
+      <circle fill="#f5d76e" cx="0" cy="0" r="4"/>
+    </g>
+    <!-- Flower 6 ~(132,90) -->
+    <g transform="translate(136,87)">
+      <circle class="petal" fill="#d4a0d8" cx="0" cy="-6" r="4.5"/>
+      <circle class="petal" fill="#d4a0d8" cx="5" cy="-2" r="4.5"/>
+      <circle class="petal" fill="#d4a0d8" cx="3" cy="5" r="4.5"/>
+      <circle class="petal" fill="#d4a0d8" cx="-3" cy="5" r="4.5"/>
+      <circle class="petal" fill="#d4a0d8" cx="-5" cy="-2" r="4.5"/>
+      <circle fill="#f5d76e" cx="0" cy="0" r="3.5"/>
+    </g>
+    <!-- Flower 7 top ~(120,28) tiny -->
+    <g transform="translate(122,27)">
+      <circle class="petal" fill="#f0b090" cx="0" cy="-5" r="3.5"/>
+      <circle class="petal" fill="#f0b090" cx="4" cy="-1" r="3.5"/>
+      <circle class="petal" fill="#f0b090" cx="2" cy="4" r="3.5"/>
+      <circle class="petal" fill="#f0b090" cx="-2" cy="4" r="3.5"/>
+      <circle class="petal" fill="#f0b090" cx="-4" cy="-1" r="3.5"/>
+      <circle fill="#f5d76e" cx="0" cy="0" r="2.5"/>
+    </g>
+
+    <!-- RIGHT SIDE FLORAL (mirrored from x=1440) -->
+    <path class="stem" stroke-width="7" d="M 1410 900 C 1400 820, 1420 750, 1390 680 C 1360 610, 1410 540, 1380 460 C 1350 380, 1400 300, 1370 210 C 1350 150, 1380 80, 1360 20"/>
+    <path class="stem" stroke-width="4" d="M 1395 780 C 1360 760, 1320 740, 1285 720"/>
+    <path class="stem" stroke-width="4" d="M 1402 650 C 1350 630, 1310 600, 1270 580"/>
+    <path class="stem" stroke-width="3" d="M 1388 510 C 1340 495, 1300 470, 1265 450"/>
+    <path class="stem" stroke-width="3" d="M 1392 370 C 1350 355, 1315 330, 1285 310"/>
+    <path class="stem" stroke-width="2" d="M 1380 240 C 1345 228, 1315 210, 1292 195"/>
+    <path class="stem" stroke-width="2" d="M 1375 130 C 1350 118, 1328 105, 1310 92"/>
+    <path class="stem" stroke-width="1.5" d="M 1370 55 C 1352 46, 1335 38, 1322 30"/>
+
+    <!-- Leaves right -->
+    <ellipse class="leaf" cx="1340" cy="760" rx="28" ry="10" transform="rotate(20 1340 760)"/>
+    <ellipse class="leaf" cx="1310" cy="618" rx="26" ry="9" transform="rotate(15 1310 618)"/>
+    <ellipse class="leaf" cx="1322" cy="482" rx="22" ry="8" transform="rotate(18 1322 482)"/>
+    <ellipse class="leaf" cx="1335" cy="345" rx="19" ry="7" transform="rotate(20 1335 345)"/>
+    <ellipse class="leaf" cx="1332" cy="220" rx="15" ry="6" transform="rotate(15 1332 220)"/>
+    <ellipse class="leaf" cx="1342" cy="112" rx="11" ry="5" transform="rotate(12 1342 112)"/>
+
+    <!-- Flowers right -->
+    <g transform="translate(1275,712)">
+      <circle class="petal" fill="#e8a0b0" cx="0" cy="-14" r="10"/>
+      <circle class="petal" fill="#e8a0b0" cx="13" cy="-4" r="10"/>
+      <circle class="petal" fill="#e8a0b0" cx="8" cy="10" r="10"/>
+      <circle class="petal" fill="#e8a0b0" cx="-8" cy="10" r="10"/>
+      <circle class="petal" fill="#e8a0b0" cx="-13" cy="-4" r="10"/>
+      <circle fill="#f5d76e" cx="0" cy="0" r="8"/>
+    </g>
+    <g transform="translate(1255,570)">
+      <circle class="petal" fill="#d4a0d8" cx="0" cy="-12" r="8.5"/>
+      <circle class="petal" fill="#d4a0d8" cx="11" cy="-4" r="8.5"/>
+      <circle class="petal" fill="#d4a0d8" cx="7" cy="9" r="8.5"/>
+      <circle class="petal" fill="#d4a0d8" cx="-7" cy="9" r="8.5"/>
+      <circle class="petal" fill="#d4a0d8" cx="-11" cy="-4" r="8.5"/>
+      <circle fill="#f5d76e" cx="0" cy="0" r="6.5"/>
+    </g>
+    <g transform="translate(1254,442)">
+      <circle class="petal" fill="#f0b090" cx="0" cy="-11" r="7.5"/>
+      <circle class="petal" fill="#f0b090" cx="10" cy="-3" r="7.5"/>
+      <circle class="petal" fill="#f0b090" cx="6" cy="8" r="7.5"/>
+      <circle class="petal" fill="#f0b090" cx="-6" cy="8" r="7.5"/>
+      <circle class="petal" fill="#f0b090" cx="-10" cy="-3" r="7.5"/>
+      <circle fill="#f5d76e" cx="0" cy="0" r="6"/>
+    </g>
+    <g transform="translate(1276,303)">
+      <circle class="petal" fill="#a8c8e8" cx="0" cy="-9" r="6.5"/>
+      <circle class="petal" fill="#a8c8e8" cx="8" cy="-3" r="6.5"/>
+      <circle class="petal" fill="#a8c8e8" cx="5" cy="7" r="6.5"/>
+      <circle class="petal" fill="#a8c8e8" cx="-5" cy="7" r="6.5"/>
+      <circle class="petal" fill="#a8c8e8" cx="-8" cy="-3" r="6.5"/>
+      <circle fill="#f5d76e" cx="0" cy="0" r="5"/>
+    </g>
+    <g transform="translate(1285,188)">
+      <circle class="petal" fill="#e8a0b0" cx="0" cy="-8" r="5.5"/>
+      <circle class="petal" fill="#e8a0b0" cx="7" cy="-2" r="5.5"/>
+      <circle class="petal" fill="#e8a0b0" cx="4" cy="6" r="5.5"/>
+      <circle class="petal" fill="#e8a0b0" cx="-4" cy="6" r="5.5"/>
+      <circle class="petal" fill="#e8a0b0" cx="-7" cy="-2" r="5.5"/>
+      <circle fill="#f5d76e" cx="0" cy="0" r="4"/>
+    </g>
+    <g transform="translate(1304,87)">
+      <circle class="petal" fill="#d4a0d8" cx="0" cy="-6" r="4.5"/>
+      <circle class="petal" fill="#d4a0d8" cx="5" cy="-2" r="4.5"/>
+      <circle class="petal" fill="#d4a0d8" cx="3" cy="5" r="4.5"/>
+      <circle class="petal" fill="#d4a0d8" cx="-3" cy="5" r="4.5"/>
+      <circle class="petal" fill="#d4a0d8" cx="-5" cy="-2" r="4.5"/>
+      <circle fill="#f5d76e" cx="0" cy="0" r="3.5"/>
+    </g>
+    <g transform="translate(1318,27)">
+      <circle class="petal" fill="#f0b090" cx="0" cy="-5" r="3.5"/>
+      <circle class="petal" fill="#f0b090" cx="4" cy="-1" r="3.5"/>
+      <circle class="petal" fill="#f0b090" cx="2" cy="4" r="3.5"/>
+      <circle class="petal" fill="#f0b090" cx="-2" cy="4" r="3.5"/>
+      <circle class="petal" fill="#f0b090" cx="-4" cy="-1" r="3.5"/>
+      <circle fill="#f5d76e" cx="0" cy="0" r="2.5"/>
+    </g>
+  </svg>
+
+  <div class="container">
+    <h1>My Dashboard</h1>
+
+    <div class="metric-row">
+      <div class="metric">
+        <div class="metric-label">Total</div>
+        <div class="metric-val" id="m-total">0</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Done</div>
+        <div class="metric-val green" id="m-done">0</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Remaining</div>
+        <div class="metric-val" id="m-rem">0</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <i class="ti ti-checklist" aria-hidden="true"></i>
+          My tasks
+        </div>
+        <div class="filter-row">
+          <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+          <button class="filter-btn" onclick="setFilter('active', this)">Active</button>
+          <button class="filter-btn" onclick="setFilter('done', this)">Done</button>
+        </div>
+      </div>
+
+      <div class="input-row">
+        <input type="text" id="task-input" placeholder="Add a new task..." onkeydown="if(event.key==='Enter') addTask()" />
+        <button onclick="addTask()">
+          <i class="ti ti-plus" aria-hidden="true"></i> Add
+        </button>
+      </div>
+
+      <div class="task-list" id="task-list"></div>
+
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'dashboard_tasks';
+
+    function loadTasks() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        return saved ? JSON.parse(saved) : [
+          { id: 1, text: 'Review CBR article draft', done: false },
+          { id: 2, text: 'Study contractor quoting workflow', done: false },
+          { id: 3, text: 'Email Professor Xie', done: true },
+        ];
+      } catch { return []; }
+    }
+
+    function saveTasks() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    }
+
+    let tasks = loadTasks();
+    let nextId = tasks.length ? Math.max(...tasks.map(t => t.id)) + 1 : 1;
+    let filter = 'all';
+
+    function setFilter(f, el) {
+      filter = f;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      render();
+    }
+
+    function addTask() {
+      const input = document.getElementById('task-input');
+      const text = input.value.trim();
+      if (!text) return;
+      tasks.push({ id: nextId++, text, done: false });
+      input.value = '';
+      saveTasks();
+      render();
+    }
+
+    function toggleTask(id) {
+      const t = tasks.find(t => t.id === id);
+      if (t) t.done = !t.done;
+      saveTasks();
+      render();
+    }
+
+    function deleteTask(id) {
+      tasks = tasks.filter(t => t.id !== id);
+      saveTasks();
+      render();
+    }
+
+    function render() {
+      const total = tasks.length;
+      const done = tasks.filter(t => t.done).length;
+      const rem = total - done;
+      document.getElementById('m-total').textContent = total;
+      document.getElementById('m-done').textContent = done;
+      document.getElementById('m-rem').textContent = rem;
+      const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+      document.getElementById('progress-bar').style.width = pct + '%';
+
+      const visible = tasks.filter(t =>
+        filter === 'all' ? true : filter === 'done' ? t.done : !t.done
+      );
+
+      const list = document.getElementById('task-list');
+      if (visible.length === 0) {
+        list.innerHTML = '<div class="empty">No tasks here.</div>';
+        return;
+      }
+      list.innerHTML = visible.map(t => `
+        <div class="task-item ${t.done ? 'done' : ''}">
+          <div class="task-check ${t.done ? 'checked' : ''}" onclick="toggleTask(${t.id})" role="checkbox" aria-checked="${t.done}" aria-label="Mark complete">
+            ${t.done ? '<i class="ti ti-check" aria-hidden="true"></i>' : ''}
+          </div>
+          <span class="task-text">${t.text}</span>
+          <button class="task-del" onclick="deleteTask(${t.id})" aria-label="Delete task">
+            <i class="ti ti-trash" aria-hidden="true"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    render();
+  </script>
+</body>
+</html>
